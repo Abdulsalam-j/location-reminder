@@ -16,7 +16,7 @@ abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Un
     /**
      * Returns the _items data
      */
-    private val items: List<T>?
+    private val items: List<T>
         get() = this._items
 
     override fun getItemCount() = _items.size
@@ -40,7 +40,7 @@ abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Un
         }
     }
 
-    fun getItem(position: Int) = _items[position]
+    private fun getItem(position: Int) = _items[position]
 
     /**
      * Adds data to the actual Dataset
