@@ -18,5 +18,4 @@ object LocalDB {
             RemindersDatabase::class.java, "locationReminders.db"
         ).build().reminderDao()
     }
-
 }

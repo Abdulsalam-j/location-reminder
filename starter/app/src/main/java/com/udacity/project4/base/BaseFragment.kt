@@ -16,16 +16,20 @@ abstract class BaseFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        viewModel.showErrorMessage.observe(this) {
-            Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
-        }
+
         viewModel.showToast.observe(this) {
             Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
         }
+
+        viewModel.showToastResId.observe(this) {
+            Toast.makeText(activity, getString(it), Toast.LENGTH_LONG).show()
+        }
+
         viewModel.showSnackBar.observe(this) {
             Snackbar.make(this.requireView(), it, Snackbar.LENGTH_LONG).show()
         }
-        viewModel.showSnackBarInt.observe(this) {
+
+        viewModel.showSnackBarResId.observe(this) {
             Snackbar.make(this.requireView(), getString(it), Snackbar.LENGTH_LONG).show()
         }
 

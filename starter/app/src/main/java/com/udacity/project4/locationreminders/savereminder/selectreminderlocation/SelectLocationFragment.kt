@@ -12,8 +12,9 @@ import org.koin.android.ext.android.inject
 
 class SelectLocationFragment : BaseFragment() {
 
-    //Use Koin to get the view model of the SaveReminder
+    // Use Koin to get the view model of the SaveReminder
     override val viewModel: SaveReminderViewModel by inject()
+
     private lateinit var binding: FragmentSelectLocationBinding
 
     override fun onCreateView(
@@ -26,6 +27,7 @@ class SelectLocationFragment : BaseFragment() {
         binding.lifecycleOwner = this
 
         setHasOptionsMenu(true)
+
         setDisplayHomeAsUpEnabled(true)
 
 //        TODO: add the map setup implementation

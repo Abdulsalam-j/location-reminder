@@ -12,8 +12,8 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.launch
 
-class SaveReminderViewModel(private val app: Application, private val dataSource: ReminderDataSource) :
-    BaseViewModel(app) {
+class SaveReminderViewModel(private val application: Application, private val dataSource: ReminderDataSource) :
+    BaseViewModel(application) {
 
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
@@ -60,7 +60,7 @@ class SaveReminderViewModel(private val app: Application, private val dataSource
                 )
             )
             showLoading.value = false
-            showToast.value = app.getString(R.string.reminder_saved)
+            showToast.value = application.getString(R.string.reminder_saved)
             navigationCommand.value = NavigationCommand.Back
         }
     }
@@ -70,12 +70,12 @@ class SaveReminderViewModel(private val app: Application, private val dataSource
      */
     private fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
         if (reminderData.title.isNullOrEmpty()) {
-            showSnackBarInt.value = R.string.err_enter_title
+            showSnackBarResId.value = R.string.err_enter_title
             return false
         }
 
         if (reminderData.location.isNullOrEmpty()) {
-            showSnackBarInt.value = R.string.err_select_location
+            showSnackBarResId.value = R.string.err_select_location
             return false
         }
         return true
