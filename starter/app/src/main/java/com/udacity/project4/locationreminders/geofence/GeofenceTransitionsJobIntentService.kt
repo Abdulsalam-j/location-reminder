@@ -52,7 +52,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         CoroutineScope(coroutineContext).launch(SupervisorJob()) {
 
             //get the reminder with the request id
-            val result = remindersLocalRepository.getReminder(requestId)
+            val result = remindersLocalRepository.getReminderById(requestId)
             if (result is Result.Success<ReminderDTO>) {
                 val reminderDTO = result.data
 

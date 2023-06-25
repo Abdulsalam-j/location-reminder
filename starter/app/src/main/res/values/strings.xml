@@ -34,14 +34,23 @@
     <string name="err_enter_title">Please enter title</string>
     <string name="err_select_location">Please select location</string>
 
+
+    <string name="add_reminder_button">add reminder</string>
+    <string name="login_cancelled_message">Login operation cancelled</string>
+    <string name="add_a_reminder">Add a reminder</string>
+    <string name="location_permission_dialog_title">Permission required</string>
+    <string name="location_permission_dialog_positive_button">Grant</string>
+    <string name="location_permission_dialog_negative_button">Exit</string>
+    <string name="enable_location">Enable location</string>
+    <string name="show_your_location_dialogue_message">To show your location on the map, please enable location services.</string>
+    <string name="enable">Enable</string>
+    <string name="cancel">Cancel</string>
+
     <!-- Error strings -->
     <string name="geofence_unknown_error">Unknown error: the Geofence service is not available now.</string>
     <string name="geofence_not_available">Geofence service is not available now. Go to Settings>Location>Mode and choose High accuracy.</string>
     <string name="geofence_too_many_geofences">Your app has registered too many geofences.</string>
     <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call.</string>
-    <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
-    <string name="add_reminder_button">add reminder</string>
+    <string name="error_adding_geofence">Error happened, Can\'t Add Geofence, please try again!</string>
     <string name="default_error_message">Sorry, something wrong happened</string>
-    <string name="login_cancelled_message">Login operation cancelled</string>
-    <string name="add_a_reminder">Add a reminder</string>
 </resources>

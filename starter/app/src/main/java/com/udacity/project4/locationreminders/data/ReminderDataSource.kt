@@ -10,6 +10,7 @@ interface ReminderDataSource {
 
     suspend fun getReminders(): Result<List<ReminderDTO>>
     suspend fun saveReminder(reminder: ReminderDTO)
-    suspend fun getReminder(id: String): Result<ReminderDTO>
+    suspend fun getReminderById(id: String): Result<ReminderDTO>
+    suspend fun deleteReminderById(id: String)
     suspend fun deleteAllReminders()
 }
