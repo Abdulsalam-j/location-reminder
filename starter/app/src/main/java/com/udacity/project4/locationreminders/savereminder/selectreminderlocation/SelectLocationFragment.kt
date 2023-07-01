@@ -1,12 +1,14 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -18,11 +20,16 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
+import android.widget.Toast
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Lifecycle
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -34,20 +41,26 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import java.util.Locale
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     companion object {
-        private const val DEFAULT_ZOOM = 15
-        private const val REQUEST_ENABLE_LOCATION = 123
+        private const val DEFAULT_ZOOM = 16
+        private const val TAG = "SaveReminderFragment"
     }
 
     override val viewModel: SaveReminderViewModel by inject()
@@ -55,11 +68,16 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var googleMap: GoogleMap
-    private lateinit var locationResolutionLauncher: ActivityResultLauncher<Intent>
 
+    private var lastKnownLocation: Location? = null
+    private var selectedMarker: Marker? = null
 
     private val defaultLocation = LatLng(-33.8523341, 151.2106085)
-    private var lastKnownLocation: Location? = null
+
+    private val locationResolutionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            zoomToUserLocation()
+        }
 
     private val locationPermissionRequestLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -70,25 +88,30 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             }
 
             permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                showPermissionDeniedDialog("Please grant the precise location permission so you get precise results and reminders")
+                showPermissionDeniedDialog(getString(R.string.dialogue_grant_precise_location))
             }
 
             else -> {
-                showPermissionDeniedDialog("Please grant the location permission so you benefit from the app")
+                showPermissionDeniedDialog(getString(R.string.dialogue_grant_location))
             }
         }
     }
 
+    private val deviceLocationActivityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // User clicked "OK" on the resolution dialog
+                zoomToUserLocation()
+            } else {
+                // User clicked "No Thanks" on the resolution dialog
+                showEnableLocationDialog()
+            }
+        }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        locationResolutionLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == REQUEST_ENABLE_LOCATION) {
-                    zoomToUserLocation()
-                } else {
-                    showEnableLocationDialog()
-                }
-            }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
     }
 
     override fun onCreateView(
@@ -100,60 +123,149 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
+        setDisplayHomeAsUpEnabled(true)
+
         val mapFragment =
             childFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-
-        setHasOptionsMenu(true)
-
-        setDisplayHomeAsUpEnabled(true)
-
-        // TODO: add style to the map
-        // TODO: put a marker to location that the user selected
-
-        // TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
+        binding.saveButton.setOnClickListener {
+            onLocationSelected()
+        }
 
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // The usage of an interface lets you inject your own implementation
+        val menuHost: MenuHost = requireActivity()
+
+        // Add menu items without using the Fragment Menu APIs
+        // Note how we can tie the MenuProvider to the viewLifecycleOwner
+        // and an optional Lifecycle.State (here, RESUMED) to indicate when
+        // the menu should be visible
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                // Add menu items here
+                menuInflater.inflate(R.menu.map_options, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                // Handle the menu selection
+                return when (menuItem.itemId) {
+                    R.id.normal_map -> {
+                        googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
+                        true
+                    }
+
+                    R.id.hybrid_map -> {
+                        googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
+                        true
+                    }
+
+                    R.id.satellite_map -> {
+                        googleMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                        true
+                    }
+
+                    R.id.terrain_map -> {
+                        googleMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
     private fun onLocationSelected() {
-        /** TODO: When the user confirms on the selected location,
-        send back the selected location details to the view model
-        and navigate back to the previous fragment to save the reminder and add the geofence
-         */
-    }
+        if (selectedMarker != null) {
+            viewModel.latitude.value = selectedMarker!!.position.latitude
+            viewModel.longitude.value = selectedMarker!!.position.longitude
+            viewModel.reminderSelectedLocationString.value = selectedMarker!!.title
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.map_options, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        // TODO: Change the map type based on the user's selection.
-        R.id.normal_map -> {
-            true
+            viewModel.navigationCommand.postValue(
+                NavigationCommand.Back
+            )
+        } else {
+            val toast = Toast.makeText(
+                requireContext(),
+                resources.getString(R.string.select_location),
+                Toast.LENGTH_SHORT
+            )
+            toast.show()
         }
-
-        R.id.hybrid_map -> {
-            true
-        }
-
-        R.id.satellite_map -> {
-            true
-        }
-
-        R.id.terrain_map -> {
-            true
-        }
-
-        else -> super.onOptionsItemSelected(item)
     }
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        setMapStyle()
+        setMapLongClick()
+        setPoiClick()
         enableLocationServices(requireContext())
+    }
+
+    private fun setMapStyle() {
+        try {
+            googleMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    requireContext(),
+                    R.raw.map_style
+                )
+            )
+        } catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "Can't find style. Error: ", e)
+        }
+    }
+
+    private fun setMapLongClick() {
+        googleMap.setOnMapLongClickListener {
+            googleMap.clear()
+
+            animateMapCamera(it)
+
+            val snippet = String.format(
+                Locale.getDefault(),
+                "Lat: %1$.5f, Long: %2$.5f",
+                it.latitude,
+                it.longitude
+            )
+
+            selectedMarker = googleMap.addMarker(
+                MarkerOptions()
+                    .position(it)
+                    .title(getString(R.string.dropped_pin))
+                    .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+            )
+            selectedMarker?.showInfoWindow()
+        }
+    }
+
+    private fun setPoiClick() {
+        googleMap.setOnPoiClickListener {
+            googleMap.clear()
+
+            animateMapCamera(it.latLng)
+
+            val snippet = String.format(
+                Locale.getDefault(),
+                "Lat: %1$.5f, Long: %2$.5f",
+                it.latLng.latitude,
+                it.latLng.longitude
+            )
+
+            selectedMarker = googleMap.addMarker(
+                MarkerOptions()
+                    .position(it.latLng)
+                    .title(it.name)
+                    .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            )
+            selectedMarker?.showInfoWindow()
+        }
     }
 
     private fun requestLocationPermission() {
@@ -191,22 +303,24 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                             lastKnownLocation!!.latitude,
                             lastKnownLocation!!.longitude
                         )
-                        googleMap.animateCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                latLng, DEFAULT_ZOOM.toFloat()
-                            )
-                        )
+                        animateMapCamera(latLng)
                     }
                 } else {
-                    googleMap.moveCamera(
-                        CameraUpdateFactory
-                            .newLatLngZoom(defaultLocation, DEFAULT_ZOOM.toFloat())
-                    )
+                    animateMapCamera(defaultLocation)
+                    googleMap.uiSettings.isMyLocationButtonEnabled = false
                 }
             }
         } catch (e: SecurityException) {
-            Log.e("Exception: %s", e.message, e)
+            Log.e(TAG, "Exception: " + e.message, e)
         }
+    }
+
+    private fun animateMapCamera(latLng: LatLng) {
+        googleMap.animateCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                latLng, DEFAULT_ZOOM.toFloat()
+            )
+        )
     }
 
     private fun showPermissionDeniedDialog(message: String) {
@@ -230,7 +344,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
                 .setWaitForAccurateLocation(false)
                 .setMinUpdateIntervalMillis(50)
-                .setMaxUpdateDelayMillis(150)
+                .setMaxUpdateDelayMillis(100)
                 .build()
 
             val builder = LocationSettingsRequest.Builder()
@@ -247,18 +361,26 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     val statusCode = exception.statusCode
                     if (statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                         try {
-                            // Location services are not enabled, but a resolution is available.
-                            // Prompt the user to enable location services.
-                            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                            locationResolutionLauncher.launch(intent)
+                            // Cast to a resolvable exception.
+                            val resolvable = exception as ResolvableApiException
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            deviceLocationActivityResultLauncher.launch(
+                                IntentSenderRequest.Builder(
+                                    resolvable.resolution
+                                ).build()
+                            )
                         } catch (e: IntentSender.SendIntentException) {
                             // Error occurred while trying to start the resolution intent.
+                            e.printStackTrace()
+                        } catch (e: ClassCastException) {
+                            // Ignore, should be an impossible error.
                             e.printStackTrace()
                         }
                     }
                 }
             }
-        }
+        } else zoomToUserLocation()
     }
 
     private fun showEnableLocationDialog() {
@@ -266,12 +388,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         dialogBuilder.setTitle(getString(R.string.enable_location))
             .setMessage(getString(R.string.show_your_location_dialogue_message))
             .setPositiveButton(getString(R.string.enable)) { dialog: DialogInterface, _: Int ->
-                // User clicked Enable
-                enableLocationServices(requireContext())
                 dialog.dismiss()
+
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                locationResolutionLauncher.launch(intent)
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog: DialogInterface, _: Int ->
-                // User clicked Cancel
                 dialog.dismiss()
             }
             .setCancelable(false)

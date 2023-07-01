@@ -33,8 +33,6 @@
     <string name="welcome">Welcome</string>
     <string name="err_enter_title">Please enter title</string>
     <string name="err_select_location">Please select location</string>
-
-
     <string name="add_reminder_button">add reminder</string>
     <string name="login_cancelled_message">Login operation cancelled</string>
     <string name="add_a_reminder">Add a reminder</string>
@@ -45,6 +43,8 @@
     <string name="show_your_location_dialogue_message">To show your location on the map, please enable location services.</string>
     <string name="enable">Enable</string>
     <string name="cancel">Cancel</string>
+    <string name="dialogue_grant_precise_location">Please grant the precise location permission so you get precise results and reminders</string>
+    <string name="dialogue_grant_location">Please grant the location permission so you benefit from the app</string>
 
     <!-- Error strings -->
     <string name="geofence_unknown_error">Unknown error: the Geofence service is not available now.</string>

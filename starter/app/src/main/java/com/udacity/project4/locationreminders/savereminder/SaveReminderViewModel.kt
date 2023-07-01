@@ -3,7 +3,6 @@ package com.udacity.project4.locationreminders.savereminder
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
@@ -12,13 +11,14 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.launch
 
-class SaveReminderViewModel(private val application: Application, private val dataSource: ReminderDataSource) :
-    BaseViewModel(application) {
+class SaveReminderViewModel(
+    private val application: Application,
+    private val dataSource: ReminderDataSource
+) : BaseViewModel(application) {
 
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationString = MutableLiveData<String?>()
-    private val selectedPOI = MutableLiveData<PointOfInterest?>()
     val latitude = MutableLiveData<Double?>()
     val longitude = MutableLiveData<Double?>()
 
@@ -29,7 +29,6 @@ class SaveReminderViewModel(private val application: Application, private val da
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationString.value = null
-        selectedPOI.value = null
         latitude.value = null
         longitude.value = null
     }
