@@ -28,6 +28,7 @@ class RemindersListViewModel(
             //interacting with the dataSource has to be through a coroutine
             val result = dataSource.getReminders()
             showLoading.postValue(false)
+
             when (result) {
                 is Result.Success<*> -> {
                     val dataList = ArrayList<ReminderDataItem>()
