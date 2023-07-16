@@ -11,6 +11,7 @@ buildscript {
         mavenCentral()
 
     }
+
     dependencies {
         classpath "com.android.tools.build:gradle:$AGPVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
@@ -72,4 +73,5 @@ ext {
     hamcrestVersion = '1.3'
     androidXTestRulesVersion = '1.6.0-alpha01'
     espressoVersion = '3.5.1'
+    workVersion = "2.8.1"
 }

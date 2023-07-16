@@ -41,10 +41,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <service
-            android:name=".locationreminders.geofence.GeofenceTransitionsJobIntentService"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

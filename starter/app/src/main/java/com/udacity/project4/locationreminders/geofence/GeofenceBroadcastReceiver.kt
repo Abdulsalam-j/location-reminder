@@ -8,18 +8,7 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
-import com.udacity.project4.locationreminders.data.ReminderDataSource
-import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.locationreminders.data.dto.Result
-import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.utils.sendReminderNotification
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.inject
-import kotlin.coroutines.CoroutineContext
+import com.udacity.project4.locationreminders.geofence.GeofenceTransitionsWorker.Companion.enqueueGeofenceWorker
 
 private const val TAG = "GeofenceBroadcastReceiver"
 
@@ -31,13 +20,7 @@ private const val TAG = "GeofenceBroadcastReceiver"
  * and handle the geofencing in the background, to do that we use work manager.
  *
  */
-class GeofenceBroadcastReceiver : BroadcastReceiver(), CoroutineScope {
-    // Get the local repository instance
-    private val remindersLocalDataSource: ReminderDataSource by inject(ReminderDataSource::class.java)
-
-    private var coroutineJob: Job = Job()
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + coroutineJob
+class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
@@ -59,7 +42,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver(), CoroutineScope {
             val triggeringGeofences = geofencingEvent.triggeringGeofences
 
             // Send notification
-            triggeringGeofences?.let { sendNotification(context, it) } ?: Log.e(
+            triggeringGeofences?.let { enqueueGeofenceWorker(context, it) } ?: Log.e(
                 TAG,
                 context.getString(R.string.triggering_geofences_is_null)
             )
@@ -71,35 +54,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver(), CoroutineScope {
                     geofenceTransition
                 )
             )
-        }
-    }
-
-    private fun sendNotification(context: Context, triggeringGeofences: List<Geofence>) {
-        for (i in triggeringGeofences.indices) {
-            val requestId = triggeringGeofences[i].requestId
-
-            // Interaction to the repository has to be through a coroutine scope
-            CoroutineScope(coroutineContext).launch(SupervisorJob()) {
-                // get the reminder with the request id
-                val result = remindersLocalDataSource.getReminderById(requestId)
-                if (result is Result.Success<ReminderDTO>) {
-                    val reminderDTO = result.data
-                    val reminderDataItem = ReminderDataItem(
-                        reminderDTO.title,
-                        reminderDTO.description,
-                        reminderDTO.location,
-                        reminderDTO.latitude,
-                        reminderDTO.longitude,
-                        reminderDTO.id
-                    )
-
-                    // send a notification to the user with the reminder details
-                    sendReminderNotification(
-                        context,
-                        reminderDataItem
-                    )
-                }
-            }
         }
     }
 }

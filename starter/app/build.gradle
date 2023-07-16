@@ -90,6 +90,9 @@ dependencies {
     implementation "com.google.maps.android:android-maps-utils:$mapsVersion"
     implementation "com.google.maps.android:maps-utils-ktx:$mapsKtxVersion"
 
+    // WorkManager
+    implementation "androidx.work:work-runtime-ktx:$workVersion"
+
     // Koin
     implementation "io.insert-koin:koin-android:$koinVersion"
 
