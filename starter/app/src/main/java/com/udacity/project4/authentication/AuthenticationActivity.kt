@@ -1,7 +1,11 @@
 package com.udacity.project4.authentication
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -13,9 +17,10 @@ import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
 
 /**
- * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
+ * This activity is the starting point of the app, It asks the users to sign in / register, and redirects the
  * signed in users to the RemindersActivity.
  */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class AuthenticationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAuthenticationBinding
@@ -33,6 +38,8 @@ class AuthenticationActivity : AppCompatActivity() {
         binding = ActivityAuthenticationBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        requestNotificationPermission()
 
         if (user != null) {
             navigateToRemindersActivity()
@@ -83,5 +90,11 @@ class AuthenticationActivity : AppCompatActivity() {
             }
             Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_LONG).show()
         }
+    }
+
+    private fun requestNotificationPermission() {
+        val pushNotificationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        pushNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 }

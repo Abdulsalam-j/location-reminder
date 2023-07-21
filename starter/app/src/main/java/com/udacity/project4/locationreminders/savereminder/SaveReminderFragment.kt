@@ -74,12 +74,11 @@ class SaveReminderFragment : BaseFragment() {
             val isReminderDataValid = viewModel.validateReminderData(reminderDataItem)
 
             if (isReminderDataValid) {
-                viewModel.saveReminder(reminderDataItem)
                 addGeofenceRequest(reminderDataItem)
             } else {
                 Snackbar.make(
                     binding.root,
-                    getString(viewModel.showToastResId.value ?: R.string.default_error_message),
+                    getString(viewModel.showSnackBarResId.value ?: R.string.default_error_message),
                     Snackbar.LENGTH_LONG
                 ).show()
             }
@@ -126,6 +125,7 @@ class SaveReminderFragment : BaseFragment() {
         val geofenceRequest = getGeofencingRequest(listOf(geofence))
         geofencingClient.addGeofences(geofenceRequest, geofencePendingIntent).run {
             addOnSuccessListener {
+                viewModel.saveReminder(reminderDataItem)
                 viewModel.navigationCommand.postValue(NavigationCommand.Back)
             }
             addOnCanceledListener {
