@@ -36,21 +36,24 @@ class ReminderListFragment : BaseFragment() {
             container, false
         )
 
-        binding.viewModel = viewModel
-
         setHasOptionsMenu(true)
-        setDisplayHomeAsUpEnabled(false)
-        setTitle(getString(R.string.app_name))
 
-        binding.refreshLayout.setOnRefreshListener { viewModel.loadReminders() }
+        setDisplayHomeAsUpEnabled(false)
+
+        setTitle(getString(R.string.app_name))
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = this
         setupRecyclerView()
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = this
+        binding.refreshLayout.setOnRefreshListener {
+            viewModel.loadReminders()
+            binding.refreshLayout.isRefreshing = false
+        }
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
         }
@@ -71,12 +74,13 @@ class ReminderListFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView() {
-        val adapter = RemindersListAdapter {
-
-        }
-
-        // todo setup the recycler view using the extension function
-
+        val adapter = RemindersListAdapter(
+            callBack = {
+                TODO() // Navigate to details activity
+            },
+            areItemsTheSame = { oldItem, newItem -> oldItem === newItem },
+            areContentsTheSame = { oldItem, newItem -> oldItem == newItem }
+        )
         binding.reminderssRecyclerView.setup(adapter)
     }
 

@@ -3,10 +3,12 @@ package com.udacity.project4.locationreminders.reminderslist
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseRecyclerViewAdapter
 
-
-// todo: Use data binding to show the reminder on the item
-class RemindersListAdapter(callBack: (selectedReminder: ReminderDataItem) -> Unit) :
-    BaseRecyclerViewAdapter<ReminderDataItem>(callBack) {
+class RemindersListAdapter(
+    callBack: (selectedReminder: ReminderDataItem) -> Unit,
+    areItemsTheSame: (oldItem: ReminderDataItem, newItem: ReminderDataItem) -> Boolean,
+    areContentsTheSame: (oldItem: ReminderDataItem, newItem: ReminderDataItem) -> Boolean
+) :
+    BaseRecyclerViewAdapter<ReminderDataItem>(callBack, areItemsTheSame, areContentsTheSame) {
 
     override fun getLayoutRes(viewType: Int) = R.layout.it_reminder
 }

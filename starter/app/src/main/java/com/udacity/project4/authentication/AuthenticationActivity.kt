@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -20,7 +19,6 @@ import com.udacity.project4.locationreminders.RemindersActivity
  * This activity is the starting point of the app, It asks the users to sign in / register, and redirects the
  * signed in users to the RemindersActivity.
  */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class AuthenticationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAuthenticationBinding
@@ -48,11 +46,6 @@ class AuthenticationActivity : AppCompatActivity() {
         binding.button.setOnClickListener {
             createSignInIntent()
         }
-
-        /**
-         * TODO: a bonus is to customize the sign in flow to look nice using :
-         * https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
-         * */
     }
 
     private fun navigateToRemindersActivity() {
@@ -95,6 +88,8 @@ class AuthenticationActivity : AppCompatActivity() {
     private fun requestNotificationPermission() {
         val pushNotificationPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
-        pushNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pushNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 }

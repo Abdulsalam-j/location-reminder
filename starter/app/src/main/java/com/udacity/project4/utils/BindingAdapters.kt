@@ -14,11 +14,11 @@ object BindingAdapters {
      */
     @BindingAdapter("android:liveData")
     @JvmStatic
-    fun <T> setRecyclerViewData(recyclerView: RecyclerView, items: LiveData<List<T>>?) {
+    fun <T : Any> setRecyclerViewData(recyclerView: RecyclerView, items: LiveData<List<T>>?) {
         items?.value?.let { itemList ->
+            @Suppress("UNCHECKED_CAST")
             (recyclerView.adapter as? BaseRecyclerViewAdapter<T>)?.apply {
-                clear()
-                addData(itemList)
+                submitList(itemList)
             }
         }
     }

@@ -5,29 +5,25 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.LifecycleOwner
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 
-abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Unit)? = null) :
-    RecyclerView.Adapter<DataBindingViewHolder<T>>() {
-
-    private var _items: MutableList<T> = mutableListOf()
-
-    /**
-     * Returns the _items data
-     */
-    private val items: List<T>
-        get() = this._items
-
-    override fun getItemCount() = _items.size
+abstract class BaseRecyclerViewAdapter<T : Any>(
+    private val callback: ((item: T) -> Unit)? = null,
+    private val areItemsTheSame: (oldItem: T, newItem: T) -> Boolean,
+    private val areContentsTheSame: (oldItem: T, newItem: T) -> Boolean
+) : ListAdapter<T, DataBindingViewHolder<T>>(
+    object : DiffUtil.ItemCallback<T>() {
+        override fun areItemsTheSame(oldItem: T, newItem: T) = areItemsTheSame(oldItem, newItem)
+        override fun areContentsTheSame(oldItem: T, newItem: T) = areContentsTheSame(oldItem, newItem)
+    }
+) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataBindingViewHolder<T> {
         val layoutInflater = LayoutInflater.from(parent.context)
 
         val binding = DataBindingUtil
             .inflate<ViewDataBinding>(layoutInflater, getLayoutRes(viewType), parent, false)
-
-        binding.lifecycleOwner = getLifecycleOwner()
 
         return DataBindingViewHolder(binding)
     }
@@ -40,30 +36,6 @@ abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Un
         }
     }
 
-    private fun getItem(position: Int) = _items[position]
-
-    /**
-     * Adds data to the actual Dataset
-     *
-     * @param items to be merged
-     */
-    fun addData(items: List<T>) {
-        _items.addAll(items)
-        notifyDataSetChanged()
-    }
-
-    /**
-     * Clears the _items data
-     */
-    fun clear() {
-        _items.clear()
-        notifyDataSetChanged()
-    }
-
     @LayoutRes
     abstract fun getLayoutRes(viewType: Int): Int
-
-    open fun getLifecycleOwner(): LifecycleOwner? {
-        return null
-    }
 }
