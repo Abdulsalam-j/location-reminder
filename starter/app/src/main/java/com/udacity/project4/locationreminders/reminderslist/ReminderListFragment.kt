@@ -8,13 +8,18 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Lifecycle
 import com.firebase.ui.auth.AuthUI
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.locationreminders.ReminderDescriptionActivity
+import com.udacity.project4.utils.Constants
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -36,8 +41,6 @@ class ReminderListFragment : BaseFragment() {
             container, false
         )
 
-        setHasOptionsMenu(true)
-
         setDisplayHomeAsUpEnabled(false)
 
         setTitle(getString(R.string.app_name))
@@ -48,6 +51,33 @@ class ReminderListFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
+
+        // The usage of an interface lets you inject your own implementation
+        val menuHost: MenuHost = requireActivity()
+
+        // Add menu items without using the Fragment Menu APIs
+        // Note how we can tie the MenuProvider to the viewLifecycleOwner
+        // and an optional Lifecycle.State (here, RESUMED) to indicate when
+        // the menu should be visible
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                // Add menu items here
+                menuInflater.inflate(R.menu.main_menu, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                // Handle the menu selection
+                return when (menuItem.itemId) {
+                    R.id.logout -> {
+                        signOut()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         binding.refreshLayout.setOnRefreshListener {
@@ -76,27 +106,14 @@ class ReminderListFragment : BaseFragment() {
     private fun setupRecyclerView() {
         val adapter = RemindersListAdapter(
             callBack = {
-                TODO() // Navigate to details activity
+                val intent = Intent(context, ReminderDescriptionActivity::class.java)
+                intent.putExtra(Constants.EXTRA_REMINDER_DATA_ITEM, it)
+                startActivity(intent)
             },
-            areItemsTheSame = { oldItem, newItem -> oldItem === newItem },
+            areItemsTheSame = { oldItem, newItem -> oldItem.id == newItem.id },
             areContentsTheSame = { oldItem, newItem -> oldItem == newItem }
         )
         binding.reminderssRecyclerView.setup(adapter)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.logout -> {
-                signOut()
-            }
-        }
-        return super.onOptionsItemSelected(item)
-
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.main_menu, menu)
     }
 
     private fun signOut() {

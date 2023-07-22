@@ -138,6 +138,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         // The usage of an interface lets you inject your own implementation
         val menuHost: MenuHost = requireActivity()
 

@@ -11,7 +11,7 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(
-    private val application: Application,
+    application: Application,
     private val dataSource: ReminderDataSource
 ) : BaseViewModel(application) {
 
@@ -44,6 +44,7 @@ class SaveReminderViewModel(
      */
     fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
+
         viewModelScope.launch {
             dataSource.saveReminder(
                 ReminderDTO(
@@ -55,8 +56,7 @@ class SaveReminderViewModel(
                     reminderData.id
                 )
             )
-            showLoading.value = false
-            showToast.value = application.getString(R.string.reminder_saved)
+            showLoading.postValue(false)
         }
     }
 

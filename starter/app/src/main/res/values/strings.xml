@@ -42,6 +42,9 @@
     <string name="cancel">Cancel</string>
     <string name="dialogue_grant_precise_location">Please grant the precise location permission so you get precise results and reminders</string>
     <string name="dialogue_grant_location">Please grant the location permission so you benefit from the app</string>
+    <string name="location_label">Location:\u0020</string>
+    <string name="title_label">Title:\u0020</string>
+    <string name="description_label">Description:\u0020</string>
 
     <!-- Error strings -->
     <string name="err_adding_geofence">Error happened, Can\'t Add Geofence, please try again!</string>

@@ -18,19 +18,19 @@ abstract class BaseFragment : Fragment() {
         super.onStart()
 
         viewModel.showToast.observe(this) {
-            Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
+            Toast.makeText(requireActivity(), it, Toast.LENGTH_LONG).show()
         }
 
         viewModel.showToastResId.observe(this) {
-            Toast.makeText(activity, getString(it), Toast.LENGTH_LONG).show()
+            Toast.makeText(requireActivity(), getString(it), Toast.LENGTH_LONG).show()
         }
 
         viewModel.showSnackBar.observe(this) {
-            Snackbar.make(this.requireView(), it, Snackbar.LENGTH_LONG).show()
+            Snackbar.make(requireView(), it, Snackbar.LENGTH_LONG).show()
         }
 
         viewModel.showSnackBarResId.observe(this) {
-            Snackbar.make(this.requireView(), getString(it), Snackbar.LENGTH_LONG).show()
+            Snackbar.make(requireView(), getString(it), Snackbar.LENGTH_LONG).show()
         }
 
         viewModel.navigationCommand.observe(this) { command ->

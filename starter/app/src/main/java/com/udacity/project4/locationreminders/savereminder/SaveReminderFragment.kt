@@ -126,6 +126,7 @@ class SaveReminderFragment : BaseFragment() {
         geofencingClient.addGeofences(geofenceRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 viewModel.saveReminder(reminderDataItem)
+                viewModel.showToast.postValue(getString(R.string.reminder_saved))
                 viewModel.navigationCommand.postValue(NavigationCommand.Back)
             }
             addOnCanceledListener {
