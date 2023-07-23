@@ -20,7 +20,7 @@ class FakeDataSource : ReminderDataSource {
         TODO("return the reminder with the id")
     }
 
-    override suspend fun deleteReminderById(id: String): Result<ReminderDTO> {
+    override suspend fun deleteReminderById(id: String) {
         TODO("Not yet implemented")
     }
 

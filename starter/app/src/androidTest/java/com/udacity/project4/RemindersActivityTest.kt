@@ -13,17 +13,14 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.GlobalContext.get
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.AutoCloseKoinTest
-import org.koin.test.get
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
-//END TO END test to black box test the app
-class RemindersActivityTest :
-    AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
+class RemindersActivityTest {// Extended Koin Test - embed autoClose @after method to close Koin after every test
 
     private lateinit var repository: ReminderDataSource
     private lateinit var appContext: Application
@@ -34,8 +31,9 @@ class RemindersActivityTest :
      */
     @Before
     fun init() {
-        stopKoin()//stop the original app koin
+        stopKoin() //stop the original app koin
         appContext = getApplicationContext()
+
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
@@ -49,15 +47,17 @@ class RemindersActivityTest :
                     get() as ReminderDataSource
                 )
             }
-            single { RemindersLocalRepository(get()) as ReminderDataSource }
+            single { RemindersLocalRepository(get()) }
             single { LocalDB.createRemindersDao(appContext) }
         }
+
         //declare a new koin module
         startKoin {
             modules(listOf(myModule))
         }
+
         //Get our real repository
-        repository = get()
+        //repository = get()
 
         //clear the data to start fresh
         runBlocking {
