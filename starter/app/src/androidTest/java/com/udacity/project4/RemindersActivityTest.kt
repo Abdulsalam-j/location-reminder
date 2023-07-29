@@ -13,10 +13,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
-import org.koin.core.context.GlobalContext.get
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import org.koin.java.KoinJavaComponent.get
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -57,7 +57,7 @@ class RemindersActivityTest {// Extended Koin Test - embed autoClose @after meth
         }
 
         //Get our real repository
-        //repository = get()
+        repository = get(ReminderDataSource::class.java)
 
         //clear the data to start fresh
         runBlocking {

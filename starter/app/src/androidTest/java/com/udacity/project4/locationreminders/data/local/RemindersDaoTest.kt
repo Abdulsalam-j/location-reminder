@@ -67,19 +67,17 @@ class RemindersDaoTest {
             2.3456
         )
 
-        val reminderId = reminder.id
-
         // Save the reminder to the database
         remindersDao.saveReminder(reminder)
 
         // Get the reminder by its ID from the database
-        val loadedReminder = remindersDao.getReminderById(reminderId)
+        val loadedReminder = remindersDao.getReminderById(reminder.id)
 
         // Ensure the loaded reminder is not null
         assertThat(loadedReminder, notNullValue())
 
         // Ensure the loaded reminder's properties match the original reminder
-        assertThat(loadedReminder?.id, `is`(reminderId))
+        assertThat(loadedReminder?.id, `is`(reminder.id))
         assertThat(loadedReminder?.title, `is`("Test Title"))
         assertThat(loadedReminder?.description, `is`("Test Description"))
         assertThat(loadedReminder?.location, `is`("Test Location"))
@@ -95,18 +93,17 @@ class RemindersDaoTest {
             "Test Description",
             "Test Location",
             1.2345,
-            2.3456,
-            "16"
+            2.3456
         )
 
         // Save the reminder to the database
         remindersDao.saveReminder(reminder)
 
         // Delete the reminder by its ID from the database
-        remindersDao.deleteReminderById("16")
+        remindersDao.deleteReminderById(reminder.id)
 
         // Get the reminder by its ID from the database
-        val loadedReminder = remindersDao.getReminderById("16")
+        val loadedReminder = remindersDao.getReminderById(reminder.id)
 
         // Ensure the loaded reminder is null, indicating it was deleted
         assertThat(loadedReminder, `is`(nullValue()))
@@ -120,8 +117,7 @@ class RemindersDaoTest {
             "Test Description",
             "Test Location",
             1.2345,
-            2.3456,
-            "66"
+            2.3456
         )
 
         // Save the reminder to the database
