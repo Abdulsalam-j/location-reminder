@@ -19,6 +19,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -118,6 +119,7 @@ dependencies {
 
     // AndroidX Test - Instrumented testing
     androidTestImplementation "androidx.test:rules:$androidXTestRulesVersion"
+    androidTestImplementation "androidx.test:core:$androidXTestCoreVersion"
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
     androidTestImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
@@ -128,6 +130,10 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
     androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
-    androidTestImplementation "androidx.fragment:fragment-testing:$fragmentVersion"
     androidTestImplementation "androidx.test:core:$androidXTestCoreVersion"
+    androidTestImplementation "androidx.navigation:navigation-testing:$navigationVersion"
+    debugImplementation "androidx.fragment:fragment-testing:$fragmentVersion"
+    debugImplementation "androidx.fragment:fragment-ktx:$fragmentVersion"
+    debugImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
+    debugImplementation "androidx.test:core:$androidXTestCoreVersion"
 }
