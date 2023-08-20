@@ -31,6 +31,10 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
             R.layout.activity_reminder_description
         )
 
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
         mapView = binding.detailsMapView
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
@@ -49,6 +53,11 @@ class ReminderDescriptionActivity : AppCompatActivity(), OnMapReadyCallback {
         // Move the camera to the marker location
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
         googleMap.uiSettings.setAllGesturesEnabled(false)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     override fun onResume() {
