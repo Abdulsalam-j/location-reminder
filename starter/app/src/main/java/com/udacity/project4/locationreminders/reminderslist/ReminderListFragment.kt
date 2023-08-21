@@ -13,6 +13,9 @@ import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
 import com.firebase.ui.auth.AuthUI
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
@@ -30,6 +33,12 @@ class ReminderListFragment : BaseFragment() {
     override val viewModel: RemindersListViewModel by viewModel()
 
     private lateinit var binding: FragmentRemindersBinding
+    private lateinit var geofencingClient: GeofencingClient
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        geofencingClient = LocationServices.getGeofencingClient(requireActivity())
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,22 +61,20 @@ class ReminderListFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
 
-        // The usage of an interface lets you inject your own implementation
         val menuHost: MenuHost = requireActivity()
 
-        // Add menu items without using the Fragment Menu APIs
-        // Note how we can tie the MenuProvider to the viewLifecycleOwner
-        // and an optional Lifecycle.State (here, RESUMED) to indicate when
-        // the menu should be visible
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // Add menu items here
                 menuInflater.inflate(R.menu.main_menu, menu)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                // Handle the menu selection
                 return when (menuItem.itemId) {
+                    R.id.clear_list -> {
+                        clearList()
+                        true
+                    }
+
                     R.id.logout -> {
                         signOut()
                         true
@@ -86,6 +93,28 @@ class ReminderListFragment : BaseFragment() {
         }
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
+        }
+    }
+
+    private fun clearList() {
+        if (viewModel.remindersList.value.isNullOrEmpty()) return
+
+        val geofenceIds = viewModel.remindersList.value!!.map { it.id }
+
+        geofencingClient.removeGeofences(
+            geofenceIds
+        ).addOnSuccessListener {
+            viewModel.clearList()
+        }.addOnCanceledListener {
+            Snackbar.make(
+                binding.root,
+                getString(R.string.operation_cancelled), Snackbar.LENGTH_SHORT
+            ).show()
+        }.addOnFailureListener {
+            Snackbar.make(
+                binding.root,
+                getString(R.string.err_removing_geofences), Snackbar.LENGTH_SHORT
+            ).show()
         }
     }
 

@@ -48,6 +48,7 @@
 
     <!-- Error strings -->
     <string name="err_adding_geofence">Error happened, Can\'t Add Geofence, please try again!</string>
+    <string name="err_removing_geofences">Error happened, Can\'t Remove Geofences, please try again!</string>
     <string name="default_error_message">Sorry, something wrong happened</string>
     <string name="operation_cancelled">operation cancelled!</string>
     <string name="error_happened">Error happened</string>
@@ -63,5 +64,7 @@
     <string name="geofence_request_too_frequent">Your app has been adding Geofences too frequently.</string>
     <string name="triggering_geofences_is_null">triggeringGeofences is null</string>
     <string name="geofence_transition_enter_is_not_received" formatted="true">Geofence GEOFENCE_TRANSITION_ENTER is not received what received is .%d</string>
+    <string name="clear_list">Clear list</string>
+    <string name="delete">delete</string>
 
 </resources>
