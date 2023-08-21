@@ -7,11 +7,13 @@ import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -25,7 +27,6 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.util.DataBindingIdlingResource
 import com.udacity.project4.util.monitorFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
@@ -120,7 +121,7 @@ class ReminderListFragmentTest {
 
     @Test
     fun displayBothRemindersWhenInDatabase() {
-        runBlocking {
+        runTest {
             repository.saveReminder(ReminderDTO("Title1", "Description1", "Location1", 1.0, 2.0))
             repository.saveReminder(ReminderDTO("Title2", "Description2", "Location2", 5.0, 9.0))
         }
@@ -130,13 +131,32 @@ class ReminderListFragmentTest {
         dataBindingIdlingResource.monitorFragment(scenario)
 
         // THEN - UI shows both Reminders
-        onView(ViewMatchers.withText("Title1")).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
-        onView(ViewMatchers.withText("Title1")).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        onView(withText("Title1")).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        onView(withText("Title1")).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+    }
+
+    @Test
+    fun displayEmptyResultWhenListCleared() {
+        runTest {
+            repository.saveReminder(ReminderDTO("Title1", "Description1", "Location1", 1.0, 2.0))
+            repository.saveReminder(ReminderDTO("Title2", "Description2", "Location2", 5.0, 9.0))
+        }
+
+        // GIVEN - on ReminderList with two Reminders
+        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
+
+        openActionBarOverflowOrOptionsMenu(appContext.applicationContext)
+
+        // THEN - UI shows both Reminders
+        onView(withText("Clear list")).perform(click())
+
+        onView(withId(R.id.noDataTextView)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
     fun displayNoDataViewWhenDatabaseEmpty() {
-        runBlocking {
+        runTest {
             repository.deleteAllReminders()
         }
 

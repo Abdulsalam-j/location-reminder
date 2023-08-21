@@ -3,7 +3,8 @@ package com.udacity.project4
 import android.app.Activity
 import android.app.Application
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso
+import androidx.test.espresso.Espresso.closeSoftKeyboard
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions
@@ -54,7 +55,7 @@ class RemindersActivityTest {
             )
         }
 
-        single <ReminderDataSource> { RemindersLocalRepository(get()) }
+        single<ReminderDataSource> { RemindersLocalRepository(get()) }
         single { RemindersLocalRepository(get()) }
         single { LocalDB.createRemindersDao(appContext.applicationContext) }
     }
@@ -67,7 +68,8 @@ class RemindersActivityTest {
 
     @Before
     fun setup() {
-        appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as Application
+        appContext =
+            InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as Application
         IdlingRegistry.getInstance().register(dataBindingIdlingResource)
     }
 
@@ -81,11 +83,11 @@ class RemindersActivityTest {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-        Espresso.onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
-        Espresso.onView(withId(R.id.saveReminder)).perform(ViewActions.click())
+        onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
+        onView(withId(R.id.saveReminder)).perform(ViewActions.click())
 
         val snackBarMessage = appContext.getString(R.string.error_enter_title)
-        Espresso.onView(ViewMatchers.withText(snackBarMessage))
+        onView(ViewMatchers.withText(snackBarMessage))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
         activityScenario.close()
@@ -96,14 +98,14 @@ class RemindersActivityTest {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-        Espresso.onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
-        Espresso.onView(withId(R.id.reminderTitle))
+        onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
+        onView(withId(R.id.reminderTitle))
             .perform(ViewActions.typeText("Title"))
-        Espresso.closeSoftKeyboard()
-        Espresso.onView(withId(R.id.saveReminder)).perform(ViewActions.click())
+        closeSoftKeyboard()
+        onView(withId(R.id.saveReminder)).perform(ViewActions.click())
 
         val snackBarMessage = appContext.getString(R.string.error_select_location)
-        Espresso.onView(ViewMatchers.withText(snackBarMessage))
+        onView(ViewMatchers.withText(snackBarMessage))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
         activityScenario.close()
@@ -114,21 +116,21 @@ class RemindersActivityTest {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-        Espresso.onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
-        Espresso.onView(withId(R.id.reminderTitle))
+        onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
+        onView(withId(R.id.reminderTitle))
             .perform(ViewActions.typeText("Title"))
-        Espresso.closeSoftKeyboard()
-        Espresso.onView(withId(R.id.reminderDescription))
+        closeSoftKeyboard()
+        onView(withId(R.id.reminderDescription))
             .perform(ViewActions.typeText("Description"))
-        Espresso.closeSoftKeyboard()
+        closeSoftKeyboard()
 
-        Espresso.onView(withId(R.id.selectLocation)).perform(ViewActions.click())
-        Espresso.onView(withId(R.id.mapView)).perform(ViewActions.longClick())
-        Espresso.onView(withId(R.id.saveButton)).perform(ViewActions.click())
+        onView(withId(R.id.selectLocation)).perform(ViewActions.click())
+        onView(withId(R.id.mapView)).perform(ViewActions.longClick())
+        onView(withId(R.id.saveButton)).perform(ViewActions.click())
 
-        Espresso.onView(withId(R.id.saveReminder)).perform(ViewActions.click())
+        onView(withId(R.id.saveReminder)).perform(ViewActions.click())
 
-        Espresso.onView(ViewMatchers.withText(R.string.reminder_saved)).inRoot(
+        onView(ViewMatchers.withText(R.string.reminder_saved)).inRoot(
             RootMatchers.withDecorView(
                 CoreMatchers.not(
                     CoreMatchers.`is`(

@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
+import org.hamcrest.Matchers.empty
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -42,19 +43,23 @@ class RemindersListViewModelTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         fakeDataSource = FakeReminderDataSource()
         viewModel = RemindersListViewModel(application, fakeDataSource)
+        val reminder = ReminderDTO("Title", "Description", "Location", 19.0, 20.2)
+        runTest {
+            fakeDataSource.saveReminder(reminder)
+        }
     }
 
     @After
     fun tearDown() {
+        runTest {
+            fakeDataSource.deleteAllReminders()
+        }
         stopKoin()
         Dispatchers.resetMain()
     }
 
     @Test
     fun `when loadReminders() is called then loading start`() = runTest {
-        val reminder = ReminderDTO("Title", "Description", "Location", 19.0, 20.2)
-        fakeDataSource.saveReminder(reminder)
-
         viewModel.loadReminders()
         assertThat(
             viewModel.showLoading.getOrAwaitValue(), Matchers.`is`(true)
@@ -64,6 +69,20 @@ class RemindersListViewModelTest {
 
         assertThat(
             viewModel.showLoading.getOrAwaitValue(), Matchers.`is`(false)
+        )
+    }
+
+    @Test
+    fun `when clearList() is called then list is cleared`() = runTest {
+        assertThat(
+            viewModel.remindersList.value, Matchers.not(empty())
+        )
+        viewModel.clearList()
+
+        advanceUntilIdle()
+
+        assertThat(
+            viewModel.remindersList.value, Matchers.`is`(empty())
         )
     }
 
