@@ -3,7 +3,7 @@
 buildscript {
     ext.kotlinVersion = '1.8.10'
     ext.navigationVersion = '2.6.0'
-    ext.AGPVersion = '8.1.0'
+    ext.AGPVersion = '8.1.1'
     ext.googleServicesVersion = '4.3.15'
 
     repositories {
