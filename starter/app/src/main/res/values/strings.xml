@@ -37,11 +37,11 @@
     <string name="location_permission_dialog_positive_button">Grant</string>
     <string name="location_permission_dialog_negative_button">Exit</string>
     <string name="enable_location">Enable location</string>
-    <string name="show_your_location_dialogue_message">To show your location on the map, please enable location services.</string>
+    <string name="request_location_dialogue_message">To perform your request, please enable location services with all the time option.</string>
     <string name="enable">Enable</string>
     <string name="cancel">Cancel</string>
     <string name="dialogue_grant_precise_location">Please grant the precise location permission so you get precise results and reminders</string>
-    <string name="dialogue_grant_location">Please grant the location permission so you benefit from the app</string>
+    <string name="dialogue_grant_location_permission">Please grant the required location permission so you benefit from the app</string>
     <string name="location_label">Location:\u0020</string>
     <string name="title_label">Title:\u0020</string>
     <string name="description_label">Description:\u0020</string>

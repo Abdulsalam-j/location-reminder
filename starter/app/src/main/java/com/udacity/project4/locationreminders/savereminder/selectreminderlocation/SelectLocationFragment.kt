@@ -1,18 +1,13 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -21,22 +16,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsResponse
-import com.google.android.gms.location.LocationSettingsStatusCodes
-import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -46,7 +33,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.tasks.Task
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -74,11 +60,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private val defaultLocation = LatLng(-33.8523341, 151.2106085)
 
-    private val locationResolutionLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-            zoomToUserLocation()
-        }
-
     private val locationPermissionRequestLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -92,21 +73,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             }
 
             else -> {
-                showPermissionDeniedDialog(getString(R.string.dialogue_grant_location))
+                showPermissionDeniedDialog(getString(R.string.dialogue_grant_location_permission))
             }
         }
     }
-
-    private val deviceLocationActivityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                // User clicked "OK" on the resolution dialog
-                zoomToUserLocation()
-            } else {
-                // User clicked "No Thanks" on the resolution dialog
-                showEnableLocationDialog()
-            }
-        }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -186,7 +156,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             viewModel.latitude.value = selectedMarker!!.position.latitude
             viewModel.longitude.value = selectedMarker!!.position.longitude
             viewModel.reminderSelectedLocationString.value = selectedMarker!!.title
-
             viewModel.navigationCommand.postValue(
                 NavigationCommand.Back
             )
@@ -205,7 +174,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setMapStyle()
         setMapLongClick()
         setPoiClick()
-        enableLocationServices(requireContext())
+        zoomToUserLocation()
     }
 
     private fun setMapStyle() {
@@ -330,72 +299,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             .setMessage(message)
             .setPositiveButton(R.string.location_permission_dialog_positive_button) { _: DialogInterface, _: Int ->
                 requestLocationPermission()
-            }
-            .setNegativeButton(R.string.location_permission_dialog_negative_button) { _: DialogInterface, _: Int ->
-                requireActivity().finish()
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun enableLocationServices(context: Context) {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
-                .setWaitForAccurateLocation(false)
-                .setMinUpdateIntervalMillis(50)
-                .setMaxUpdateDelayMillis(100)
-                .build()
-
-            val builder = LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest)
-            val client = LocationServices.getSettingsClient(requireActivity())
-            val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-
-            task.addOnSuccessListener {
-                zoomToUserLocation()
-            }
-
-            task.addOnFailureListener { exception ->
-                if (exception is ApiException) {
-                    val statusCode = exception.statusCode
-                    if (statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                        try {
-                            // Cast to a resolvable exception.
-                            val resolvable = exception as ResolvableApiException
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            deviceLocationActivityResultLauncher.launch(
-                                IntentSenderRequest.Builder(
-                                    resolvable.resolution
-                                ).build()
-                            )
-                        } catch (e: IntentSender.SendIntentException) {
-                            // Error occurred while trying to start the resolution intent.
-                            e.printStackTrace()
-                        } catch (e: ClassCastException) {
-                            // Ignore, should be an impossible error.
-                            e.printStackTrace()
-                        }
-                    }
-                }
-            }
-        } else zoomToUserLocation()
-    }
-
-    private fun showEnableLocationDialog() {
-        val dialogBuilder = AlertDialog.Builder(requireContext())
-        dialogBuilder.setTitle(getString(R.string.enable_location))
-            .setMessage(getString(R.string.show_your_location_dialogue_message))
-            .setPositiveButton(getString(R.string.enable)) { dialog: DialogInterface, _: Int ->
-                dialog.dismiss()
-
-                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                locationResolutionLauncher.launch(intent)
-            }
-            .setNegativeButton(getString(R.string.cancel)) { dialog: DialogInterface, _: Int ->
-                dialog.dismiss()
             }
             .setCancelable(false)
             .show()
